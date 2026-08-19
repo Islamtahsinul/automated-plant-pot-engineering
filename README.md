@@ -6,31 +6,35 @@ This repository is the project's engineering source of truth. The objective is n
 
 ## Project Goal
 
-Build a small autonomous plant pot that can:
-
-- Measure soil moisture.
-- Decide when watering is required.
-- Automatically run a water pump.
-- Deliver a controlled amount of water.
-- Store water in a reservoir.
-- Detect a low/empty reservoir.
-- Prevent overwatering and runaway pump operation.
-- Operate unattended for extended periods.
-- Remain inexpensive, electrically safe, mechanically practical, and maintainable.
+Build a small autonomous plant pot that can measure soil moisture, decide when watering is required, automatically run a pump, deliver a controlled amount of water, store water in a reservoir, detect a low/empty reservoir, prevent overwatering/runaway operation, operate unattended, and remain inexpensive, electrically safe, mechanically practical, and maintainable.
 
 ## Design Principles
 
-1. **ESP32 first** — use the ESP32 as the controller unless a requirement genuinely cannot be met by it.
-2. **Measure before deciding** — component ratings and assumptions must be checked experimentally.
+1. **ESP32 first** — use the ESP32 unless a requirement genuinely cannot be met by it.
+2. **Measure before deciding** — verify important assumptions experimentally.
 3. **Calibrate the real system** — especially soil moisture and water delivery.
-4. **Build incrementally** — prove each subsystem before integrating it.
-5. **Design for failure** — protect against empty reservoirs, sensor faults, stuck pumps, leaks, and reboots.
-6. **Keep V1 focused** — advanced features such as dashboards, displays, batteries, solar, and multiple plants are deferred until the core system is reliable.
-7. **Document decisions** — record what was chosen, why it was chosen, and what evidence supports the choice.
+4. **Build incrementally** — prove each subsystem before integration.
+5. **Design for failure** — handle empty reservoirs, sensor faults, stuck pumps, leaks and reboots.
+6. **Keep V1 focused** — dashboards, displays, batteries, solar and multiple plants are deferred.
+7. **Document decisions** — record what was chosen, why, and what evidence supports it.
 
-## Current Development Path
+## Development Path
 
 **IDEA → REQUIREMENTS → RESEARCH → CALCULATIONS → COMPONENT SELECTION → EXPERIMENTS → PROTOTYPE → TESTING → ITERATION → FINAL DESIGN**
+
+## Research Incorporated
+
+The current research has been converted into project artifacts rather than remaining as background reading:
+
+- [`requirements/requirements.md`](requirements/requirements.md) — requirements and verification targets
+- [`schematics/system-architecture.md`](schematics/system-architecture.md) — V1 architecture and power/water/information flow
+- [`bom/component-shortlist.md`](bom/component-shortlist.md) — component options and selection logic
+- [`bom/bom-v1.md`](bom/bom-v1.md) — V1 bill of materials and cost targets
+- [`calculations/v1-calculations.md`](calculations/v1-calculations.md) — calculation templates and decision variables
+- [`experiments/experiment-plan.md`](experiments/experiment-plan.md) — subsystem experiments and decision gates
+- [`testing/test-plan.md`](testing/test-plan.md) — requirement-linked validation tests
+
+These documents are living engineering records. Measured results should replace assumptions as the build progresses.
 
 ## Initial System Concept
 
@@ -50,7 +54,7 @@ Build a small autonomous plant pot that can:
                                   [ Pump ]
                                       │
                                       ▼
-                              [ Tubing / Drip ]
+                              [ Tubing / Outlet ]
                                       │
                                       ▼
                                     [Plant]
@@ -58,85 +62,39 @@ Build a small autonomous plant pot that can:
                         WATER / POWER FLOW
 
  [DC Power Supply]
-       ├───────────────> [Pump]
-       └──> [Buck Regulator] ──> [ESP32 + Sensors]
+       ├───────────────> [Pump branch]
+       └──> [Regulator] ──> [ESP32 + Sensors]
 
  [Reservoir] ──> [Pump] ──> [Plant]
 ```
 
-This is a **starting architecture**, not the final design. Pump voltage, pump type, moisture sensor, thresholds, watering volume, and power architecture must be validated experimentally.
+This is a starting architecture, not the final design. Pump voltage/type, sensor, thresholds, watering volume and power architecture must be validated experimentally.
 
-## Engineering Stages
+## V1 Design Direction
 
-### Stage 1 — Engineering Problem
-Define the target plant, pot scale, watering behaviour, operating environment, constraints, assumptions, and success criteria.
+The current recommended direction is:
 
-### Stage 2 — Requirements
-Create functional, performance, electrical, mechanical, safety, cost, and reliability requirements. Every requirement should have a verification method.
+- ESP32 DevKit-style board.
+- Analog capacitive soil moisture sensor.
+- Small 12 V DC pump selected from measured flow/head/current requirements.
+- Logic-level N-channel MOSFET low-side switch.
+- Flyback diode for a brushed DC pump unless equivalent suppression is built into the selected hardware.
+- Simple float switch for reservoir low-level detection.
+- Certified low-voltage DC supply.
+- 1–2 L removable plastic reservoir as the initial design range.
+- Simple tubing and off-the-shelf pot/reservoir hardware.
 
-### Stage 3 — System Architecture
-Partition the system into sensing, processing, actuation, water handling, power, mechanical structure, and optional communications.
-
-### Stage 4 — Component Research
-Compare realistic low-cost ESP32 boards, capacitive soil sensors, pumps, MOSFETs, protection parts, level sensors, power supplies, tubing, reservoirs, wiring, and prototyping hardware.
-
-### Stage 5 — Soil Moisture Sensing
-Characterise sensor behaviour in the actual soil. Avoid treating advertised percentages as ground truth. Establish useful dry/wet thresholds from measured data.
-
-### Stage 6 — Pump and Water System
-Measure flow and current under the real tubing/head arrangement. Determine the relationship between pump runtime and delivered volume.
-
-### Stage 7 — Electrical Engineering
-Develop and verify the power budget, voltage rails, pump driver, flyback protection, grounding, wiring, and fault protection.
-
-### Stage 8 — Control System
-Implement filtered sensing, hysteresis, minimum watering interval, maximum pump runtime, reservoir interlock, fault handling, and safe boot behaviour.
-
-### Stage 9 — Mechanical Design
-Design the pot/reservoir/pump/tubing arrangement for stability, leak resistance, refill access, maintenance, and safe separation of water and electronics.
-
-### Stage 10 — CAD / Physical Design
-Use CAD only where it adds value: custom brackets, mounts, interfaces, and enclosures. Prefer inexpensive off-the-shelf parts for everything else.
-
-### Stage 11 — BOM
-Maintain the complete bill of materials, UK prices, supplier references, substitutions, and cost assumptions.
-
-### Stage 12 — Build Strategy
-Progress from V0 component experiments through integrated prototypes to a validated final build. Do not add complexity before the previous stage is proven.
-
-### Stage 13 — Experiments
-Record controlled experiments for sensor calibration, pump flow, pump current, MOSFET switching, water volume, reservoir detection, and complete watering cycles.
-
-### Stage 14 — Testing and Validation
-Trace each requirement to a repeatable test and acceptance criterion.
-
-### Stage 15 — Failure Analysis
-Maintain a practical hobby-scale FMEA covering sensor faults, pump faults, leaks, empty reservoirs, blocked tubing, power loss, firmware crashes, and bad measurements.
-
-### Stage 16 — Firmware
-Keep the ESP32 firmware simple: sensor acquisition, filtering, state-based watering control, safety limits, error handling, serial diagnostics, and configurable calibration data.
-
-### Stage 17 — Documentation
-Keep all engineering evidence in version control, including requirements, research, schematics, calculations, CAD, firmware, experiments, test results, photos, and design decisions.
-
-### Stage 18 — Learning Curriculum
-Use the project to learn electronics, embedded systems, sensors, power electronics, motors/pumps, control, fluid flow, CAD, prototyping, testing, and FMEA.
-
-### Stage 19 — Execution Plan
-Follow a single chronological build path with explicit decision gates before purchases and before advancing to the next prototype.
-
-### Stage 20 — Final Design
-Produce a validated, documented, maintainable physical system rather than a one-off breadboard demonstration.
+This is a recommendation, not a final purchase list. The pump and supply remain decision-gated by experiments.
 
 ## Version Strategy
 
 | Version | Purpose | Rule |
 |---|---|---|
 | V0 | Individual component experiments | No full integration |
-| V1 | Sensor + controller proof | Establish reliable measurement |
-| V2 | Pump + controller integration | Prove actuation and water delivery |
+| V1 | Measurement/controller proof | Establish reliable sensor data |
+| V2 | Pump/controller integration | Prove switching and water delivery |
 | V3 | Integrated prototype | Add reservoir protection and robust control |
-| V4 | Final physical build | Improve mechanics, wiring, reliability, and documentation |
+| V4 | Final physical build | Improve mechanics, wiring, reliability and documentation |
 
 ## V1 Feature Boundary
 
@@ -146,33 +104,30 @@ Produce a validated, documented, maintainable physical system rather than a one-
 - One soil-moisture sensor
 - One pump
 - One reservoir low-level detector
-- Pump switching circuit
+- Pump switching/protection circuit
 - Controlled watering duration
 - Safety timeout
 - Serial diagnostics
 - Local autonomous control
 
-### Deliberately Deferred
+### Deferred
 
 - OLED/display
-- Phone or web dashboard
+- Phone/web dashboard
 - Notifications
-- Water consumption logging beyond basic test data
 - Manual watering button
-- Battery power
-- Solar charging
+- Battery/solar
 - Multiple plants
 - Cloud services
-
-These features can be reconsidered after the core watering system passes validation.
+- Flow meter/closed-loop flow control
 
 ## Engineering Evidence Rules
 
-When documenting a design decision, label information as one of:
+Label information as:
 
-- **Verified** — measured on the actual hardware/system or supported directly by a manufacturer datasheet or official technical document.
+- **Verified** — measured on actual hardware/system or directly supported by a manufacturer datasheet/official technical document.
 - **Recommendation** — an engineering choice made for this project based on trade-offs.
-- **Assumption** — a value adopted temporarily so work can proceed.
+- **Assumption** — a temporary value adopted so work can proceed.
 - **Approximation** — an estimate that will be refined by measurement.
 
 Do not silently convert assumptions into facts.
@@ -209,11 +164,11 @@ For every major engineering decision:
 6. Select the simplest solution that satisfies the requirement with sensible margin.
 7. Record the reasoning.
 8. Test it.
-9. Update the design if the evidence disagrees with the original assumption.
+9. Update the design if evidence disagrees with the original assumption.
 
-## Status
+## Current Status
 
-Project infrastructure created. The next engineering task is to populate the requirements and research artifacts, then begin V0 experiments before purchasing the final V1 component set.
+Project infrastructure is established and the research has now been translated into the core engineering artifacts. **Next gate: run V0 experiments and resolve the pump, sensor and power decisions before buying the final V1 set.**
 
 ## License
 
