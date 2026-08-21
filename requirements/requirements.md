@@ -1,15 +1,34 @@
 # Engineering Requirements
 
+## V1 Plant and Physical Target
+
+**Selected plant:** Little Gem lettuce (*Lactuca sativa*), one plant.
+
+**Status:** Design input / initial assumption. The plant choice is now fixed for V1, but watering thresholds and dose remain experimental.
+
+| Parameter | Initial target | Status |
+|---|---:|---|
+| Plants | 1 | Selected |
+| Pot diameter | ~150–200 mm | Proposed |
+| Soil depth | ~150–200 mm | Proposed |
+| Reservoir | ~0.5–1.5 L | Proposed |
+| Irrigation | DC pump + tubing | Proposed |
+| Moisture sensing | 1 capacitive sensor | Proposed |
+| Controller | ESP32 | Selected |
+| Control | Moisture threshold + hysteresis | Proposed |
+| V1 objective | Keep soil moisture in a suitable range for Little Gem | Proposed |
+| Advanced features | Deferred | Deliberate scope decision |
+
 ## Scope
-V1 is a single small potted plant with autonomous irrigation. ESP32 is the controller. Temperature/humidity, display, Wi-Fi dashboard, notifications, battery/solar, water metering and multiple plants are deliberately deferred.
+V1 is a single small Little Gem lettuce plant with autonomous irrigation. ESP32 is the controller. Temperature/humidity, display, Wi-Fi dashboard, notifications, battery/solar, water metering and multiple plants are deliberately deferred.
 
 ## Assumptions
 
-- A small forgiving edible plant is used; cherry tomato, chilli, basil or similar may be considered after checking local growing conditions. Final plant selection is an experiment decision, not a fixed design input.
-- Target pot is approximately 150–200 mm diameter with drainage.
-- Reservoir target is approximately 1–2 L for V1.
-- Indoor or sheltered operation is assumed during development.
-- Mains power is acceptable for the prototype, with a certified low-voltage DC adapter kept away from water.
+- Little Gem lettuce is grown indoors in a small container with drainage.
+- Target pot is approximately 150–200 mm diameter and 150–200 mm soil depth.
+- Reservoir target is approximately 0.5–1.5 L; final size will be calculated from measured water demand and desired unattended duration.
+- Indoor/sheltered operation is assumed during development.
+- Mains power is acceptable for the prototype, using a certified low-voltage DC adapter kept away from water.
 - Watering volume and moisture thresholds must be experimentally calibrated rather than copied from a generic percentage.
 
 ## Functional requirements
@@ -17,10 +36,10 @@ V1 is a single small potted plant with autonomous irrigation. ESP32 is the contr
 | ID | Requirement | Verification |
 |---|---|---|
 | FR-01 | Measure soil moisture at a configurable interval. | Log readings for 24 h and confirm stable acquisition. |
-| FR-02 | Decide whether watering is required using calibrated thresholds. | Dry/wet soil test with known threshold crossings. |
+| FR-02 | Decide whether watering is required using calibrated thresholds for the Little Gem soil system. | Dry/wet soil test with known threshold crossings. |
 | FR-03 | Switch the pump electronically from an ESP32 GPIO. | Repeated 100-cycle switching test. |
 | FR-04 | Deliver a controlled water quantity. | Collect pump output and compare with target volume. |
-| FR-05 | Store enough water for unattended operation. | Reservoir endurance calculation and practical trial. |
+| FR-05 | Store enough water for the intended unattended period. | Reservoir endurance calculation and practical trial. |
 | FR-06 | Detect low/empty reservoir before a watering event. | Empty/near-empty reservoir test. |
 | FR-07 | Prevent repeated watering caused by noise or threshold chatter. | Hysteresis and lockout test. |
 | FR-08 | Stop the pump on timeout or detected fault. | Force blocked/empty/no-flow conditions and verify shutdown. |
@@ -32,10 +51,10 @@ V1 is a single small potted plant with autonomous irrigation. ESP32 is the contr
 |---|---|---|
 | PR-01 | Soil measurement repeatability | Aim for <5% of calibrated dry-to-wet span under unchanged conditions. |
 | PR-02 | Watering repeatability | Aim for ±10% of experimentally established V1 dose. |
-| PR-03 | Pump maximum continuous runtime | Configurable hard limit; initial target 30 s. |
-| PR-04 | Minimum interval between watering events | Configurable; initial target 6 h. |
+| PR-03 | Pump maximum continuous runtime | Configurable hard limit; initial target 30 s, to be revised after pump-flow testing. |
+| PR-04 | Minimum interval between watering events | Configurable; initial target 6 h, to be revised using plant/soil observations. |
 | PR-05 | Post-watering settling time | Initial target 10–30 min before evaluating moisture again. |
-| PR-06 | Reservoir capacity | Target 1–2 L, sized from measured daily water demand. |
+| PR-06 | Reservoir capacity | Target 0.5–1.5 L, sized from measured daily water demand and desired unattended duration. |
 
 ## Electrical requirements
 
